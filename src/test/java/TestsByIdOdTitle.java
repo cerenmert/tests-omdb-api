@@ -5,7 +5,7 @@ import org.testng.annotations.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class OmdbApiTests_ByIdOdTitle {
+public class TestsByIdOdTitle {
     String url = "http://www.omdbapi.com";
     String errorMessageWhen401 = "No API key provided.";
 

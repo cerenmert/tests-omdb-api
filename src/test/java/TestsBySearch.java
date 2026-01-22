@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class OmdbApiTests_BySearch {
+public class TestsBySearch {
     String url = "http://www.omdbapi.com";
     String apiKey = "3cad8349";
 
