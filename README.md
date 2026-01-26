@@ -73,4 +73,5 @@ Located in `src/test/java/TestsByIdOrTitle.java`, these tests focus on looking u
 ## Configuration
 
 - **Base URL**: `https://www.omdbapi.com`
-- **API Key**: `3cad8349` (Note: This is a free tier key and may have usage limits)
+- **API Key**: You should create an API key from this URL
+http://www.omdbapi.com/apikey.aspx 
