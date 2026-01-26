@@ -1,78 +1,110 @@
+import helper.DataProviderHelper;
+import helper.MessageResource;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import model.GetResponse;
 import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
+import spec.ResponseSpec;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class TestsByIdOrTitle {
-    String url = "http://www.omdbapi.com";
+public class TestsByIdOrTitle extends BaseServiceTest {
     String apiKey = "3cad8349";
-    String errorMessageWhen401 = "No API key provided.";
+    String url = "https://www.omdbapi.com";
 
     @Test
     public void shouldSearchByTitle() {
-        Response responseByTitle = RestAssured.given()
-                .queryParam("t", "Batman")
-                .queryParam("apikey", apiKey)
-                .get(url)
-                .then()
-                .statusCode(200)
-                .extract().response();
-        responseByTitle.prettyPrint();
-        assertThat(responseByTitle.getBody().jsonPath().getString("Title"),
+        Map<String, Object> params = requestMaps.titleMap("Batman", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
+        response.prettyPrint();
+        assertThat(response.getBody().jsonPath().getString("Title"),
                 Matchers.equalToIgnoringCase("Batman"));
     }
 
     @Test
+    public void shouldSearchByTitleAndYearVersion1() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("t", "Batman");
+        params.put("y", "1989");
+        params.put("apikey", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
+        String title = response.getBody().jsonPath().getString("Title");
+        assertThat(title, Matchers.equalTo("Batman"));
+    }
+
+    @Test
+    public void shouldSearchByTitleAndYearVersion2() {
+        Map<String, Object> params = requestMaps.titleAndYearMap("Batman", "1989", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
+        assertThat(response.getBody().jsonPath().getString("Title"),
+                Matchers.equalToIgnoringCase("Batman"));
+    }
+
+    @Test
+    public void shouldSearchByTitleAndYearVersion3() {
+        Map<String, Object> params = requestMaps.titleAndYearMap("Batman", "1989", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
+        GetResponse as = response.as(GetResponse.class);
+        assertThat(as.getTitle(), Matchers.equalTo("Batman"));
+    }
+
+    @Test(dataProvider = "titleAndYear", dataProviderClass = DataProviderHelper.class)
+    public void shouldSearchByTitleAndYearVersion4(String title, String year) {
+        Map<String, Object> titledAndYear = requestMaps.titleAndYearMap(title, year, apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(titledAndYear, ResponseSpec.checkStatusCodeOK());
+        assertThat(response.getBody().jsonPath().getString("Title"), Matchers.equalTo(title));
+    }
+
+    @Test
     public void shouldSearchByImdbIDAndYear() {
-        Response responseByImdbIDAndYear = RestAssured.given()
-                .queryParam("i", "tt0096895")
-                .queryParam("y", "1989")
-                .queryParam("apikey", apiKey)
-                .get(url)
-                .then()
-                .statusCode(200)
-                .extract().response();
+        Map<String, Object> params = new HashMap<>();
+        params.put("i", "tt0096895");
+        params.put("y", "1989");
+        params.put("apikey", apiKey);
+        Response responseByImdbIDAndYear = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
         assertThat(responseByImdbIDAndYear.getBody().jsonPath().getString("Title"),
                 Matchers.equalToIgnoringCase("Batman"));
     }
 
     @Test
     public void shouldSearchByImdbID() {
-        Response responseByImdbID = RestAssured.given()
-                .queryParam("i", "tt0096895")
-                .queryParam("apikey", apiKey)
-                .get(url)
-                .then()
-                .statusCode(200)
-                .extract().response();
+        Map<String, Object> imdbIDMap = requestMaps.imdbIDMap(apiKey);
+        Response responseByImdbID = byIdOrTitleService.getByIdOrTitle(imdbIDMap, ResponseSpec.checkStatusCodeOK());
         assertThat(responseByImdbID.getBody().jsonPath().getString("Title"),
                 Matchers.equalToIgnoringCase("Batman"));
     }
 
     @Test
     public void shouldNotGetResponseWithoutApiKey() {
-        Response responseWhen401 = RestAssured.given()
-                .queryParam("t", "Batman")
-                .get(url)
-                .then()
-                .statusCode(401)
-                .extract()
-                .response();
+        String errorMessageWhen401 = "No API key provided.";
+        Map<String, Object> params = new HashMap<>();
+        params.put("t", "Batman");
+        Response responseWhen401 = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeUnauthorized());
         assertThat(responseWhen401.getBody().jsonPath().getString("Error"),
                 Matchers.equalToIgnoringCase(errorMessageWhen401));
     }
 
     @Test
+    public void shouldNotGetResponseWithoutApiKeyVersion2() {
+        RequestMaps requestMaps = new RequestMaps();
+        Map<String, Object> params = requestMaps.noApiKeyMap("Batman");
+
+        Response responseWhen401 = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeUnauthorized());
+        String expected_error_message_when_401 = MessageResource.getMessage("ERROR_MESSAGE_WHEN_401");
+        assertThat(responseWhen401.getBody().jsonPath().getString("Error"),
+                Matchers.equalToIgnoringCase(expected_error_message_when_401));
+    }
+
+    @Test
     public void shouldRatingsValueGreaterThanFifty() {
-        Response responseByTitle = RestAssured.given()
-                .queryParam("t", "Batman")
-                .queryParam("apikey", apiKey)
-                .get(url)
-                .then()
-                .statusCode(200)
-                .extract().response();
+        Map<String, Object> params = new HashMap<>();
+        params.put("t", "Batman");
+        params.put("apikey", apiKey);
+        Response responseByTitle = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
         String ratingsValue = responseByTitle.getBody().jsonPath().getString("Ratings[1].Value");
         int rating = Integer.parseInt(ratingsValue.split("%")[0]);
         assertThat(rating, Matchers.greaterThan(50));
@@ -80,39 +112,30 @@ public class TestsByIdOrTitle {
 
     @Test
     public void shouldTypeIsMovie() {
-        Response response = RestAssured.given()
-                .queryParam("t", "Shrek")
-                .queryParam("apikey", apiKey)
-                .get(url)
-                .then()
-                .statusCode(200)
-                .extract().response();
+        Map<String, Object> params = new HashMap<>();
+        params.put("t", "Shrek");
+        params.put("apikey", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
         String type = response.getBody().jsonPath().getString("Type");
         assertThat(type, Matchers.equalToIgnoringCase("movie"));
     }
 
     @Test
     public void shouldPosterIsURL() {
-        Response response = RestAssured.given()
-                .queryParam("t", "Shrek")
-                .queryParam("apikey", apiKey)
-                .get(url)
-                .then()
-                .statusCode(200)
-                .extract().response();
+        Map<String, Object> params = new HashMap<>();
+        params.put("t", "Shrek");
+        params.put("apikey", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
         String posterUrl = response.getBody().jsonPath().getString("Poster");
         assertThat(posterUrl, Matchers.startsWith("https://"));
     }
 
     @Test
     public void shouldLanguageIsEnglish() {
-        Response response = RestAssured.given()
-                .queryParam("t", "Shrek")
-                .queryParam("apikey", apiKey)
-                .get(url)
-                .then()
-                .statusCode(200)
-                .extract().response();
+        Map<String, Object> params = new HashMap<>();
+        params.put("t", "Shrek");
+        params.put("apikey", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
         String language = response.getBody().jsonPath().getString("Language");
         assertThat(language, Matchers.containsString("English"));
     }
