@@ -48,8 +48,7 @@ public class TestsByIdOrTitle extends BaseServiceTest {
     public void shouldSearchByTitleAndYearVersion3() {
         Map<String, Object> params = requestMaps.titleAndYearMap("Batman", "1989", apiKey);
         Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
-        GetResponse as = response.as(GetResponse.class);
-        assertThat(as.getTitle(), Matchers.equalTo("Batman"));
+        assertThat(response.getBody().jsonPath().getString("Title"), Matchers.equalTo("Batman"));
     }
 
     @Test(dataProvider = "titleAndYear", dataProviderClass = DataProviderHelper.class)
