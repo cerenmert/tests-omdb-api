@@ -2,10 +2,10 @@ import helper.DataProviderHelper;
 import helper.MessageResource;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import model.GetResponse;
 import org.hamcrest.Matchers;
 import org.testng.annotations.Test;
 import spec.ResponseSpec;
+import model.GetResponse;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,8 +13,16 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestsByIdOrTitle extends BaseServiceTest {
-    String apiKey = "3cad8349";
-    String url = "https://www.omdbapi.com";
+
+    @Test
+    public void shouldSearchByTitleUsingModel() {
+        Map<String, Object> params = requestMaps.titleMap("Batman", apiKey);
+        Response response = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeOK());
+
+        // Convert response to GetResponse model. It is deserialization
+        GetResponse getResponse = response.as(GetResponse.class);
+        assertThat(getResponse.getTitle(), Matchers.equalToIgnoringCase("Batman"));
+    }
 
     @Test
     public void shouldSearchByTitle() {
@@ -78,22 +86,22 @@ public class TestsByIdOrTitle extends BaseServiceTest {
     }
 
     @Test
-    public void shouldNotGetResponseWithoutApiKey() {
+    public void shouldNotGetResponseWithoutApiKeyVersion1() {
         String errorMessageWhen401 = "No API key provided.";
         Map<String, Object> params = new HashMap<>();
         params.put("t", "Batman");
-        Response responseWhen401 = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeUnauthorized());
+        Response responseWhen401 = byIdOrTitleService.getByIdOrTitle(params,
+                ResponseSpec.checkStatusCodeUnauthorized());
         assertThat(responseWhen401.getBody().jsonPath().getString("Error"),
                 Matchers.equalToIgnoringCase(errorMessageWhen401));
     }
 
     @Test
     public void shouldNotGetResponseWithoutApiKeyVersion2() {
-        RequestMaps requestMaps = new RequestMaps();
         Map<String, Object> params = requestMaps.noApiKeyMap("Batman");
-
-        Response responseWhen401 = byIdOrTitleService.getByIdOrTitle(params, ResponseSpec.checkStatusCodeUnauthorized());
-        String expected_error_message_when_401 = MessageResource.getMessage("ERROR_MESSAGE_WHEN_401");
+        Response responseWhen401 = byIdOrTitleService.getByIdOrTitle(params,
+                ResponseSpec.checkStatusCodeUnauthorized());
+        String expected_error_message_when_401 = MessageResource.get("ERROR_MESSAGE_WHEN_401");
         assertThat(responseWhen401.getBody().jsonPath().getString("Error"),
                 Matchers.equalToIgnoringCase(expected_error_message_when_401));
     }
@@ -229,7 +237,7 @@ public class TestsByIdOrTitle extends BaseServiceTest {
         String episode1TitleFromSeasonResponse = response.getBody().jsonPath().getString("Episodes[0].Title");
         String imdbID1FromSeasonResponse = response.getBody().jsonPath().getString("Episodes[0].imdbID");
         String releaseDateFromSeasonResponse = response.getBody().jsonPath().getString("Episodes[0].Released");
-        String releaseDateYearFromSeasonResponse = releaseDateFromSeasonResponse.split("-")[0]; //"2012-04-01"
+        String releaseDateYearFromSeasonResponse = releaseDateFromSeasonResponse.split("-")[0]; // "2012-04-01"
 
         Response response2 = RestAssured.given()
                 .queryParam("t", "Game of Thrones")
@@ -243,7 +251,7 @@ public class TestsByIdOrTitle extends BaseServiceTest {
         String episode1TitleFromEpisodeResponse = response2.getBody().jsonPath().getString("Title");
         String imdbIDFromEpisodeResponse = response2.getBody().jsonPath().getString("imdbID");
         String releaseDateFromEpisodeResponse = response2.getBody().jsonPath().getString("Released");
-        String releaseDateYearFromEpisodeResponse = releaseDateFromEpisodeResponse.split(" ")[2]; //"01 Apr 2012"
+        String releaseDateYearFromEpisodeResponse = releaseDateFromEpisodeResponse.split(" ")[2]; // "01 Apr 2012"
 
         assertThat(episode1TitleFromSeasonResponse, Matchers.equalToIgnoringCase(episode1TitleFromEpisodeResponse));
         assertThat(imdbID1FromSeasonResponse, Matchers.equalTo(imdbIDFromEpisodeResponse));

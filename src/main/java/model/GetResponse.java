@@ -1,7 +1,13 @@
 package model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.util.List;
+import java.util.Map;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class GetResponse {
     private String Title;
     private String Year;
@@ -27,7 +33,7 @@ public class GetResponse {
     private String Production;
     private String Website;
     private String Response;
-    private  List<String> Ratings;
+    private List<Map<String, String>> Ratings;
 
     public String getTitle() {
         return Title;
@@ -221,11 +227,11 @@ public class GetResponse {
         Response = response;
     }
 
-    public List<String> getRatings() {
+    public List<Map<String, String>> getRatings() {
         return Ratings;
     }
 
-    public void setRatings(List<String> ratings) {
+    public void setRatings(List<Map<String, String>> ratings) {
         Ratings = ratings;
     }
 

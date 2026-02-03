@@ -1,3 +1,4 @@
+import helper.ApiResource;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.hamcrest.Matchers;
@@ -10,8 +11,8 @@ import java.util.List;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class TestsBySearch {
-    String url = "https://www.omdbapi.com";
-    String apiKey = "3cad8349";
+    String url = ApiResource.get("URL");
+    String apiKey = ApiResource.get("API_KEY");
 
     @Test
     public void shouldCheckTotalResultWithSearchByTitle() {
@@ -78,7 +79,8 @@ public class TestsBySearch {
                 yearToCheck = yearStr.split("–")[0];
             }
             int year = Integer.parseInt(yearToCheck);
-            Assert.assertTrue(year >= 1989 && year <= 2022, "Year " + year + " is out of expected range.");
+            Assert.assertTrue(year >= 1989 && year <= 2022, "Year " + year + " is out of expected " +
+                    "range.");
         }
     }
 
@@ -185,8 +187,9 @@ public class TestsBySearch {
                 .queryParam("apikey", apiKey)
                 .get(url)
                 .then()
-                .statusCode(200) // OMDB usually returns 200 even for errors/not found, but json body has Response: False
+                .statusCode(200)
                 .extract().response();
+        // OMDB usually returns 200 even for errors/not found, but json body has Response: False
         String responseStatus = response.getBody().jsonPath().getString("Response");
         String errorMsg = response.getBody().jsonPath().getString("Error");
         Assert.assertEquals(responseStatus, "False", "Response should be False for out of range page");
