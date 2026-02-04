@@ -24,6 +24,7 @@ public class TestsBySearch {
                 .statusCode(200)
                 .extract().response();
         responseBySearch.prettyPrint();
+        responseBySearch.then().body("Response", Matchers.equalTo("True"));
         int totalResults = Integer.parseInt(responseBySearch.getBody().jsonPath().getString("totalResults"));
         Assert.assertEquals(totalResults, 632);
     }
