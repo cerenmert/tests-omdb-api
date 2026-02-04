@@ -8,11 +8,19 @@ This project contains automated tests for the [OMDB API](http://www.omdbapi.com/
 - **Build Tool**: Maven
 - **Test Framework**: TestNG
 - **API Client**: RestAssured
+- **JSON Processing**: Jackson Databind
 
 ## Prerequisites
 
 - Java JDK 15 or higher
 - Maven installed
+
+## Models
+
+### GetResponse.java
+A POJO (Plain Old Java Object) class representing the formatted JSON response from the OMDB API. 
+- **Annotations**: Uses Jackson annotations (`@JsonNaming`, `@JsonIgnoreProperties`) to handle `PascalCase` JSON keys and ignore unknown properties.
+- **Type Handling**: Handles complex types like `Ratings` which is a `List<Map<String, String>>`.
 
 ## Running Tests
 
@@ -55,6 +63,7 @@ Located in `src/test/java/TestsByIdOrTitle.java`, these tests focus on looking u
 
 #### Lookup Logic
 - **`shouldSearchByTitle`**: Verifies exact title search (e.g., "Batman").
+- **`shouldSearchByTitleUsingModel`**: Demonstrates how to deserialize the JSON response directly into the `GetResponse` Java object for type-safe assertions.
 - **`shouldSearchByImdbIDAndYear`**: Verifies search by specific ImdbID and Year.
 - **`shouldSearchByImdbID`**: Verifies search by specific ImdbID.
 - **`shouldNotGetResponseWithoutApiKey`**: Verifies that requests without an API key return a 401 Unauthorized status.
@@ -73,5 +82,4 @@ Located in `src/test/java/TestsByIdOrTitle.java`, these tests focus on looking u
 ## Configuration
 
 - **Base URL**: `https://www.omdbapi.com`
-- **API Key**: You should create an API key from this URL
-http://www.omdbapi.com/apikey.aspx 
+- **API Key**: You should create an API key from this URL: [OMDB API Key](http://www.omdbapi.com/apikey.aspx) 
