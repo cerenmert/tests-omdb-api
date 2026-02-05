@@ -34,6 +34,20 @@ public class TestsByIdOrTitle extends BaseServiceTest {
     }
 
     @Test
+    public void shouldSearchByTitleAndYearVersion0() {
+        Response response = RestAssured.given()
+                .queryParam("t", "Batman")
+                .queryParam("y", "1989")
+                .queryParam("apikey", apiKey)
+                .get(url)
+                .then()
+                .statusCode(200)
+                .extract().response();
+        String title = response.getBody().jsonPath().getString("Title");
+        assertThat(title, Matchers.equalTo("Batman"));
+    }
+
+    @Test
     public void shouldSearchByTitleAndYearVersion1() {
         Map<String, Object> params = new HashMap<>();
         params.put("t", "Batman");
