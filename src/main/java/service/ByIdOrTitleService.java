@@ -7,10 +7,12 @@ import spec.RequestSpec;
 
 import java.util.Map;
 
+import helper.ApiResource;
+
 public class ByIdOrTitleService extends RequestSpec {
 
     public ByIdOrTitleService() {
-        super("https://www.omdbapi.com/");
+        super(ApiResource.get("URL"));
     }
 
     public Response getByIdOrTitle(Map<String, Object> params, ResponseSpecification responseSpecification) {
